@@ -19,6 +19,4 @@ The controller board has an IC that receives the signal from the remote control,
 
 For model reference only, this video shows the model and shape of the parts:
 
-[RGB-DC99 Dreamcolor Chasing Color Changing RGB Controller & Light Strip SEDC series]
-
-https://www.youtube.com/watch?v=fhb3GJJXOHg
+![RGB-DC99 Dreamcolor Chasing Color Changing RGB Controller & Light Strip SEDC series](https://www.youtube.com/watch?v=fhb3GJJXOHg)
