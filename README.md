@@ -5,7 +5,7 @@ RF magic Controller 6803 IC 133 Modes for Dream Color Chasing 5050 RGB LED Strip
 
 I was interested in using this device for other purposes, so I tried to find out which microcontroller (uC) is used on the controller board. Control board ICs and remote control board IC do not have the codes printed on the housing.
 
-It appears to be an STM8S003F3 or similar, see the pinout found on the Internet. The VSS (GND), VDD, VCAP and NRST pins are in the same position as the board tracks.
+It appears to be an ![STM8S003F3](https://www.st.com/en/microcontrollers-microprocessors/stm8s003f3.html) or similar, see the pinout found on the Internet. The VSS (GND), VDD, VCAP and NRST pins are in the same position as the board tracks.
 
 ![alt text](https://raw.githubusercontent.com/rtek1000/RF_Magic_Controller_6803_IC/main/stm8s003f3.png?raw=true)
 
