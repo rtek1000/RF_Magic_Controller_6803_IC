@@ -12,3 +12,5 @@ Control board ICs and remote control board IC do not have the codes printed on t
 
 The remote control transmitter consumes approximately 2.4uA at rest with the 12V battery, model 23A. And when the button is pressed, the consumption is greater than 13mA.
 
+The controller board has an IC that receives the signal from the remote control, this IC has a 6.7458MHz crystal. The signal is passed directly to the uC, like any 433MHz RF receiver. The signal enters pin 12 of the main uC.
+
