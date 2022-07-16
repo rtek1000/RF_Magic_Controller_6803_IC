@@ -12,7 +12,7 @@ It appears to be an ![STM8S003F3](https://www.st.com/en/microcontrollers-micropr
 The uC supply is 5V, and apparently the 4-digit display is controlled by some other microcontroller.
 Apparently the display triggering communication is via serial, and when comparing with the STM8S003F3 pinout, pin 2 is the TX output of UART1.
 - Async Serial 9600 bauds
-- - Display 'H''0''0''1': uC sends 17, 128, 128, 129
+- - Display 'H''0''0''1': uC sends 17, 128, 128, 129 (4 bytes, values in decimal)
 - - Display 'H''0''1''7': uC sends 17, 128, 129, 135
 - - Display 'H''1''3''3': uC sends 17, 129, 131, 131
 - - Display 'P''P''P''P': uC sends 25, 25, 25, 25
