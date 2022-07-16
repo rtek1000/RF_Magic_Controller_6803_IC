@@ -12,15 +12,15 @@ It appears to be an ![STM8S003F3](https://www.st.com/en/microcontrollers-micropr
 The uC supply is 5V, and apparently the 4-digit display is controlled by some other microcontroller.
 Apparently the display triggering communication is via serial, and when comparing with the STM8S003F3 pinout, pin 2 is the TX output of UART1.
 - Async Serial 9600 bauds
-- - Display 'H001': uC sends 17, 128, 128, 129
-- - Display 'H017': uC sends 17, 128, 129, 135
-- - Display 'H133': uC sends 17, 129, 131, 131
-- - Display 'PPPP': uC sends 25, 25, 25, 25
-- - Display '5001': uC sends 5, 128, 128, 129
-- - Display '5001': uC sends 5, 128, 128, 129
-- - Display '5028': uC sends 5, 128, 130, 136
-- - Display '5100': uC sends 5, 129, 128, 128
-- - Display '    ' (All OFF): uC sends '>', '>', '>', '>' (ASCII 62) 
+- - Display 'H''0''0''1': uC sends 17, 128, 128, 129
+- - Display 'H''0''1''7': uC sends 17, 128, 129, 135
+- - Display 'H''1''3''3': uC sends 17, 129, 131, 131
+- - Display 'P''P''P''P': uC sends 25, 25, 25, 25
+- - Display '5''0''0''1': uC sends 5, 128, 128, 129
+- - Display '5''0''0''1': uC sends 5, 128, 128, 129
+- - Display '5''0''2''8': uC sends 5, 128, 130, 136
+- - Display '5''1''0''0': uC sends 5, 129, 128, 128
+- - Display ' '' '' '' ' (All OFF): uC sends '>', '>', '>', '>' (ASCII 62) 
 
 
 The remote control transmitter consumes approximately 2.4uA at rest with the 12V battery, model 23A (It is recommended not to leave the 12V battery in the remote control transmitter when storing for more than a few days, the battery powers a voltage regulator directly). And when the button is pressed, the consumption is greater than 13mA.
