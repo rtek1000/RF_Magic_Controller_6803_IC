@@ -19,7 +19,7 @@ Apparently the display triggering communication is via serial, and when comparin
 - - Display '5''0''0''1': uC sends 5, 128, 128, 129
 - - Display '5''0''2''8': uC sends 5, 128, 130, 136
 - - Display '5''1''0''0': uC sends 5, 129, 128, 128
-- - Display ' '' '' '' ' (All segments disabled): uC sends '>', '>', '>', '>' (ASCII 62) 
+- - Display ' '' '' '' ' (All segments disabled): uC sends '>', '>', '>', '>' (ASCII 62, interval between sends: 2 seconds) 
 
 
 The remote control transmitter consumes approximately 2.4uA at rest with the 12V battery, model 23A (It is recommended not to leave the 12V battery in the remote control transmitter when storing for more than a few days, the battery powers a voltage regulator directly). And when the button is pressed, the consumption is greater than 13mA.
