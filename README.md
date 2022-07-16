@@ -6,7 +6,7 @@ I was interested in using this device for other purposes, so I tried to find out
 It appears to be an STM8S003F3 or similar, see the pinout found on the Internet. The GND, VCC, Vcap and NRST pins are in the same position as the board tracks.
 
 The uC supply is 5V, and apparently the 4-digit display is controlled by some other microcontroller.
-Apparently the display triggering communication is via serial, and when comparing with the STM8S003F3 pinout, pin 2 is the TX output of USART1.
+Apparently the display triggering communication is via serial, and when comparing with the STM8S003F3 pinout, pin 2 is the TX output of UART1.
 
 Control board ICs and remote control board IC do not have the codes printed on the housing.
 
