@@ -17,7 +17,6 @@ Apparently the display triggering communication is via serial, and when comparin
 - - Display 'H''1''3''3': uC sends 17, 129, 131, 131
 - - Display 'P''P''P''P': uC sends 25, 25, 25, 25
 - - Display '5''0''0''1': uC sends 5, 128, 128, 129
-- - Display '5''0''0''1': uC sends 5, 128, 128, 129
 - - Display '5''0''2''8': uC sends 5, 128, 130, 136
 - - Display '5''1''0''0': uC sends 5, 129, 128, 128
 - - Display ' '' '' '' ' (All segments disabled): uC sends '>', '>', '>', '>' (ASCII 62) 
