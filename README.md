@@ -8,7 +8,7 @@ It appears to be an STM8S003F3 or similar, see the pinout found on the Internet.
 The uC supply is 5V, and apparently the 4-digit display is controlled by some other microcontroller.
 Apparently the display triggering communication is via serial, and when comparing with the STM8S003F3 pinout, pin 2 is the TX output of UART1.
 
-The remote control transmitter consumes approximately 2.4uA at rest with the 12V battery, model 23A (It is recommended not to leave the 12V battery in the remote control transmitter when storing for more than a few days). And when the button is pressed, the consumption is greater than 13mA.
+The remote control transmitter consumes approximately 2.4uA at rest with the 12V battery, model 23A (It is recommended not to leave the 12V battery in the remote control transmitter when storing for more than a few days, the battery powers a voltage regulator directly). And when the button is pressed, the consumption is greater than 13mA.
 
 The controller board has an IC that receives the signal from the remote control, this IC has a 6.7458MHz crystal. The signal is passed directly to the uC, like any 433MHz RF receiver. The signal enters pin 12 of the main uC.
 
