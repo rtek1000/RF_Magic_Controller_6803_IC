@@ -10,6 +10,11 @@ https://circuitdigest.com/microcontroller-projects/programming-stm8s-microcontro
 
 [2] When uploading code via Arduino IDE, the original program will be erased forever, be sure what you are doing.
 
+Reference:
+
+![alt text](https://circuitdigest.com/sites/default/files/inlineimages/u2/Arduino-Pin-Mapping-for-STM8S103F3.png?raw=true)
+
+
 ## Licence:
 
 Software:
