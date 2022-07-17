@@ -1,0 +1,456 @@
+/*
+    This sample code does the counting in hexadecimal
+
+    Created by RTEK1000
+    Date: 2022-07-16
+    Repo.: https://github.com/rtek1000/RF_Magic_Controller_6803_IC/blob/main/Arduino/Test_keyboard.ino
+
+    Here's how to program:
+    https://circuitdigest.com/microcontroller-projects/programming-stm8s-microcontrollers-using-arduino-ide
+
+    (Tested using the STM8S103F3 model selected in the Arduino IDE)
+
+*/
+
+#include"stm8s.h"
+
+// ref.: https://www.stm32duino.com/viewtopic.php?t=719
+// #define digitalPinToInterrupt(p)  ((p)==(p)) // workaround-fix, empty macro is missing in header files
+
+char c[5] = {36, 164, 164, 164, 0};
+
+const char char_H = 17;
+const char char_P = 25;
+const char char_Off = 62;
+
+// 17: H
+// 18: seg e
+// 19: seg b, c, d
+// 20: seg g
+// 21: seg d, e, f "L"
+// 23: seg a, b, c, e, f "N"
+// 25: P
+// 28: seg a, e
+// 29: seg a, b, d, e, f
+// 30: seg d, g
+// 31: seg c, d, e, g "o"
+// 34: seg a, g
+// 36: seg a
+// 37: seg a, b
+// 38: seg a, b, c
+// 39: seg a, b, c, d
+// 40: seg a, b, c, d, e
+// 41: seg a, b, c, d, e, f
+// 42: seg a, b, c, d, e, f, g
+// 62: all off
+// 64: 0
+// 65: 1
+// 66: 2
+// 67: 3
+// 68: 4
+// 69: 5
+// 70: 6
+// 71: 7
+// 72: 8
+// 73: 9
+// 74: A
+// 75: b
+// 76: C
+// 77: d
+// 78: E
+// 79: F
+// 93: seg a, b, d, e, f "C'"
+
+#define Serial_TX 14 // PD5
+
+/*
+   Not Connected:
+   PD1 SWIM (ST-Link)
+   PB5 D3
+   PD4 D13
+*/
+
+/*
+   RF input:
+   PB4 D4
+
+*/
+
+#define RF_in 4
+
+/*
+   Output:
+   PD3 D12
+   PD2 D11
+
+*/
+
+/*
+   Keyboard pinout
+   GND
+   PA3: D2
+   PA2: D1
+   PA1: D0
+   PC3: D5
+   PC4: D6
+   PC5: D7
+   PC6: D8
+   PC7: D9
+
+*/
+
+#define key_0 2
+#define key_1 1
+#define key_2 0
+#define key_3 5
+#define key_4 6
+#define key_5 7
+#define key_6 8
+#define key_7 9
+
+bool key_0_old = true;
+bool key_1_old = true;
+bool key_2_old = true;
+bool key_3_old = true;
+bool key_4_old = true;
+bool key_5_old = true;
+bool key_6_old = true;
+bool key_7_old = true;
+
+long cnt1 = 0;
+
+unsigned long millis1 = 0;
+
+char val_0_F(int x);
+void print_4_dig_dec(uint32_t x);
+void print_4_dig_hex(uint32_t x);
+void send_string(char *str);
+void setup (void);
+void loop (void);
+
+char val_0_F_dig0(int x) {
+  return x + 64;
+}
+
+char val_0_F(int x) {
+  return x + 64; //0x80;
+}
+
+void print_4_dig_dec(uint32_t x) {
+  uint8_t x1000 = x / 1000;
+  x -= x1000 * 1000;
+  uint8_t x100 = x / 100;
+  x -= x100 * 100;
+  uint8_t x10 = x / 10;
+  x -= x10 * 10;
+  uint8_t x1 = x;
+
+  if (x1000 == 0) x1000 = 62;
+  c[0] = x1000;
+  c[1] = val_0_F(x100);
+  c[2] = val_0_F(x10);
+  c[3] = val_0_F(x1);
+
+  send_string(c);
+}
+
+void print_4_dig_hex(uint32_t x) {
+  uint8_t x1000 = x / 0x1000;
+  x -= x1000 * 0x1000;
+  uint8_t x100 = x / 0x100;
+  x -= x100 * 0x100;
+  uint8_t x10 = x / 0x10;
+  x -= x10 * 0x10;
+  uint8_t x1 = x;
+
+  if (x1000 == 0) x1000 = 62;
+  c[0] = x1000;
+  c[1] = val_0_F(x100);
+  c[2] = val_0_F(x10);
+  c[3] = val_0_F(x1);
+
+  send_string(c);
+}
+
+/*
+
+   Routine send_string source: https://github.com/tenbaht/sduino/blob/development/examples/uart-spl/uart_spl.c
+
+*/
+
+void send_string(char *str) {
+  char c;
+
+  if (!str) return;
+
+  while ( c = *str++ ) { // assignment intented
+    while (!UART1_GetFlagStatus(UART1_FLAG_TXE));
+    UART1_SendData8(c);
+  }
+}
+
+volatile uint32_t flag = 0;
+
+// void RF_interr(void){
+void EXTI1_IRQHandler(void) {
+  flag++;
+}
+
+void setup (void) {
+  pinMode(Serial_TX, OUTPUT); // Serial TX
+
+  //
+  digitalWrite(Serial_TX, HIGH);
+  //  digitalWrite(Serial_TX, LOW);
+  //  digitalWrite(Serial_TX, HIGH);
+  //
+  //  delay(42);
+
+  pinMode(RF_in, INPUT);
+
+  pinMode(key_0, INPUT_PULLUP);
+  pinMode(key_1, INPUT_PULLUP);
+  pinMode(key_2, INPUT_PULLUP);
+  pinMode(key_3, INPUT_PULLUP);
+  pinMode(key_4, INPUT_PULLUP);
+  pinMode(key_5, INPUT_PULLUP);
+  pinMode(key_6, INPUT_PULLUP);
+  pinMode(key_7, INPUT_PULLUP);
+
+  //  // attachInterrupt(digitalPinToInterrupt(RF_in), RF_interr, CHANGE);
+
+  //  ITC_DeInit();
+  //  ITC_SetSoftwarePriority(ITC_IRQ_PORTB, ITC_PRIORITYLEVEL_0);
+  //
+  //  EXTI_DeInit();
+  //  EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOB, EXTI_SENSITIVITY_RISE_FALL);
+  //  // EXTI_SetTLISensitivity(EXTI_TLISENSITIVITY_FALL_ONLY);
+  //
+  //  enableInterrupts();
+
+  UART1_DeInit();
+  UART1_Init(9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
+             UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
+
+  char init1[2] = {0xFF, 0};
+
+  send_string(init1);
+
+  delay(42);
+
+  send_string(init1);
+  send_string(init1);
+
+  delay(90);
+
+  while (1) {
+    send_string(c);
+
+    if (c[0] < 42) {
+      c[0]++;
+      c[1]++;
+      c[2]++;
+      c[3]++;
+    } else {
+      break;
+    }
+
+    delay(100);
+  }
+
+  delay(600);
+}
+
+bool RF_in_new = false;
+bool RF_in_old = false;
+
+int cnt_bits_rf = 0;
+
+unsigned long data_bits_rf = 0;
+unsigned long data_bits_rf2 = 0;
+
+unsigned int micros1 = 0;
+unsigned int micros2 = 0;
+
+const unsigned long data_addr = 0B0101010101010101;
+const unsigned int data_on_off =  0B110000000;
+const unsigned int data_pause =   0B001100000;
+const unsigned int data_b_plus =  0B001111000;
+const unsigned int data_b_minus = 0B110011000;
+const unsigned int data_s_plus =  0B000011000;
+const unsigned int data_s_minus = 0B111100000;
+const unsigned int data_m_plus =  0B000000110;
+const unsigned int data_m_minus = 0B111111000;
+
+void loop (void) {
+  // Remote control patterns:
+  //         0000000000111111 111122222
+  //         0123456789012345 678901234
+  // ON/OFF: 0101010101010101 110000000
+  // PAUSE:  0101010101010101 001100000
+  // B+:     0101010101010101 001111000
+  // B-:     0101010101010101 110011000
+  // S+:     0101010101010101 000011000
+  // S-:     0101010101010101 111100000
+  // M+:     0101010101010101 000000110
+  // M-:     0101010101010101 111111000
+  // T: 1.570ms
+  // 0: 0.3985ms
+  // 1: 1.185ms
+
+  RF_in_new = digitalRead(RF_in);
+
+  if (RF_in_new != RF_in_old) {
+    RF_in_old = RF_in_new;
+
+    if (RF_in_new == true) {
+      // cnt1++;
+
+      micros1 = micros();
+    } else { // if (RF_in_new == false)
+      micros2 = micros() - micros1;
+      if (micros2 > 1050) { // 1185us + 100us // 398us - 100us
+        if (micros2 < 1350) {
+          data_bits_rf = (data_bits_rf << 1) + 1;
+        } else {
+          data_bits_rf = 0;
+          cnt_bits_rf = 0;
+        }
+      } else if (micros2 < 550) { // 1185us + 100us // 398us - 100us
+        if (micros2 > 250) {
+          data_bits_rf = data_bits_rf << 1;
+        }
+      } else {
+        data_bits_rf = 0;
+        cnt_bits_rf = 0;
+        // cnt1 = 0;
+      }
+
+      if (cnt_bits_rf != 25) {
+        cnt_bits_rf++;
+      } else {
+        data_bits_rf2 = data_bits_rf;
+
+        unsigned long data_addr_rf = data_bits_rf2 >> 9;
+
+        if (data_addr_rf == data_addr) {
+          //cnt1++;
+
+          unsigned int data_rf = data_bits_rf2 & 0x1FF;
+
+          // cnt1 += 0x1;
+          if (data_rf == data_on_off) { // Key Power
+            cnt1 += 0x1000;
+          } else if (data_rf == data_pause) { // Key Pause
+            cnt1 -= 0x1000;
+          } else if (data_rf == data_b_plus) { // Key B+ (Key Program +)
+            cnt1 += 0x100;
+          } else if (data_rf == data_b_minus) { // Key B- (Key Program -)
+            cnt1 -= 0x10;
+          } else if (data_rf == data_s_plus) { // Key S+ (Key Quick)
+            cnt1 += 0x10;
+          } else if (data_rf == data_s_minus) { // Key S- (Key Slow)
+            cnt1 -= 0x100;
+          } else if (data_rf == data_m_plus) { // Key M+ (Key Length +)
+            cnt1 += 0x1;
+          } else if (data_rf == data_m_minus) { // Key M- (Key Length -)
+            cnt1 -= 0x1;
+          }
+
+          if (cnt1 > 0xFFFF) {
+            cnt1 = 0;
+          }
+
+          if (cnt1 < 0) {
+            cnt1 = 0xFFFF;
+          }
+
+          //          print_4_dig_hex(cnt1);
+          //
+          //          millis1 = millis();
+
+          data_bits_rf = 0;
+          cnt_bits_rf = 0;
+        }
+      }
+    }
+  }
+
+
+  if (flag > 0) {
+    cnt1 += flag;
+    flag = 0;
+  }
+
+  if (millis() > (millis1 + 250)) {
+    millis1 = millis();
+
+    print_4_dig_hex(cnt1);
+
+    //    if (cnt1 < 0x10000) {
+    //      cnt1++;
+    //    } else {
+    //      cnt1 = 0;
+    //    }
+
+    if ((digitalRead(key_0) == LOW) && (key_0_old == true)) { // Key Length +
+      key_0_old = false;
+      cnt1 += 0x1;
+    } else if (digitalRead(key_0) == HIGH) {
+      key_0_old = true;
+    }
+
+    if ((digitalRead(key_1) == LOW) && (key_1_old == true)) { // Key Length -
+      key_1_old = false;
+      cnt1 -= 0x1;
+    } else if (digitalRead(key_1) == HIGH) {
+      key_1_old = true;
+    }
+
+    if ((digitalRead(key_2) == LOW) && (key_2_old == true)) { // Key Quick
+      key_2_old = false;
+      cnt1 += 0x10;
+    } else if (digitalRead(key_2) == HIGH) {
+      key_2_old = true;
+    }
+
+    if ((digitalRead(key_3) == LOW) && (key_3_old == true)) { // Key Program -
+      key_3_old = false;
+      cnt1 -= 0x10;
+    } else if (digitalRead(key_3) == HIGH) {
+      key_3_old = true;
+    }
+
+    if ((digitalRead(key_4) == LOW) && (key_4_old == true)) { // Key Program +
+      key_4_old = false;
+      cnt1 += 0x100;
+    } else if (digitalRead(key_4) == HIGH) {
+      key_4_old = true;
+    }
+
+    if ((digitalRead(key_5) == LOW) && (key_5_old == true)) { // Key Slow
+      key_5_old = false;
+      cnt1 -= 0x100;
+    } else if (digitalRead(key_5) == HIGH) {
+      key_5_old = true;
+    }
+
+    if ((digitalRead(key_6) == LOW) && (key_6_old == true)) { // Key Power
+      key_6_old = false;
+      cnt1 += 0x1000;
+    } else if (digitalRead(key_6) == HIGH) {
+      key_6_old = true;
+    }
+
+    if ((digitalRead(key_7) == LOW) && (key_7_old == true)) { // Key Pause
+      key_7_old = false;
+      cnt1 -= 0x1000;
+    } else if (digitalRead(key_7) == HIGH) {
+      key_7_old = true;
+    }
+
+    if (cnt1 >= 0x10000) {
+      cnt1 = 0;
+    }
+  }
+}
