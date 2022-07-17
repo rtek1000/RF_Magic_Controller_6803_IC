@@ -1,3 +1,12 @@
+/* 
+ *  This sample code does the counting in hexadecimal
+ *  
+ *  Created by RTEK1000
+ *  Date: 2022-07-16
+ *  Repo.: https://github.com/rtek1000/RF_Magic_Controller_6803_IC/blob/main/Arduino/Teste.ino
+ *  
+ */
+
 #include"stm8s.h"
 
 char c[5] = {36, 164, 164, 164, 0};
