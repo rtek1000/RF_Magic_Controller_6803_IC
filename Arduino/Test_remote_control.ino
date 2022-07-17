@@ -14,6 +14,9 @@
     - 2022-07-17: Added timer counter
     - 2022-07-17: Added external interrupt
     - 2022-07-17: Added return (exit) for resync
+
+    Other modifications:
+    - 2022-07-17: Added interruption for keyboard
 */
 
 #include"stm8s.h"
@@ -156,6 +159,7 @@ char val_0_F(int x);
 void print_4_dig_dec(uint32_t x);
 void print_4_dig_hex(uint32_t x);
 void send_string(char *str);
+void key_interr (void);
 void setup (void);
 void loop (void);
 
@@ -323,6 +327,64 @@ void RF_interr(void) {
   }
 }
 
+void key_interr (void) {
+  if ((digitalRead(key_0) == LOW) && (key_0_old == true)) { // Key Length +
+    key_0_old = false;
+    cnt1 += 0x1;
+  } else if (digitalRead(key_0) == HIGH) {
+    key_0_old = true;
+  }
+
+  if ((digitalRead(key_1) == LOW) && (key_1_old == true)) { // Key Length -
+    key_1_old = false;
+    cnt1 -= 0x1;
+  } else if (digitalRead(key_1) == HIGH) {
+    key_1_old = true;
+  }
+
+  if ((digitalRead(key_2) == LOW) && (key_2_old == true)) { // Key Quick
+    key_2_old = false;
+    cnt1 += 0x10;
+  } else if (digitalRead(key_2) == HIGH) {
+    key_2_old = true;
+  }
+
+  if ((digitalRead(key_3) == LOW) && (key_3_old == true)) { // Key Program -
+    key_3_old = false;
+    cnt1 -= 0x10;
+  } else if (digitalRead(key_3) == HIGH) {
+    key_3_old = true;
+  }
+
+  if ((digitalRead(key_4) == LOW) && (key_4_old == true)) { // Key Program +
+    key_4_old = false;
+    cnt1 += 0x100;
+  } else if (digitalRead(key_4) == HIGH) {
+    key_4_old = true;
+  }
+
+  if ((digitalRead(key_5) == LOW) && (key_5_old == true)) { // Key Slow
+    key_5_old = false;
+    cnt1 -= 0x100;
+  } else if (digitalRead(key_5) == HIGH) {
+    key_5_old = true;
+  }
+
+  if ((digitalRead(key_6) == LOW) && (key_6_old == true)) { // Key Power
+    key_6_old = false;
+    cnt1 += 0x1000;
+  } else if (digitalRead(key_6) == HIGH) {
+    key_6_old = true;
+  }
+
+  if ((digitalRead(key_7) == LOW) && (key_7_old == true)) { // Key Pause
+    key_7_old = false;
+    cnt1 -= 0x1000;
+  } else if (digitalRead(key_7) == HIGH) {
+    key_7_old = true;
+  }
+}
+
 void setup (void) {
   pinMode(RF_in, INPUT);
 
@@ -342,6 +404,18 @@ void setup (void) {
   enableInterrupts();
 
   attachInterrupt(INT_PORTB & 0xFF, RF_interr, CHANGE);
+
+  // ref.: https://www.stm32duino.com/viewtopic.php?t=719
+  GPIO_Init(GPIOA, GPIO_PIN_3 | GPIO_PIN_2 | GPIO_PIN_1, GPIO_MODE_IN_PU_IT);
+  GPIO_Init(GPIOC, GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7, GPIO_MODE_IN_PU_IT);
+
+  disableInterrupts();
+  EXTI_SetExtIntSensitivity( EXTI_PORT_GPIOA, EXTI_SENSITIVITY_RISE_FALL);
+  EXTI_SetExtIntSensitivity( EXTI_PORT_GPIOC, EXTI_SENSITIVITY_RISE_FALL);
+  enableInterrupts();
+
+  attachInterrupt(INT_PORTA & 0xFF, key_interr, CHANGE); // Group: GPIO_PIN_3 | GPIO_PIN_2 | GPIO_PIN_1
+  attachInterrupt(INT_PORTC & 0xFF, key_interr, CHANGE); // Group: GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7
 
   // https://sites.google.com/site/klaasdc/stm8s-projects/rpm-counter-1
   TIM1_DeInit();
@@ -389,68 +463,12 @@ void loop (void) {
   if (millis() > (millis1 + 250)) {
     millis1 = millis();
 
-    print_4_dig_hex(cnt1);
-
-    if ((digitalRead(key_0) == LOW) && (key_0_old == true)) { // Key Length +
-      key_0_old = false;
-      cnt1 += 0x1;
-    } else if (digitalRead(key_0) == HIGH) {
-      key_0_old = true;
-    }
-
-    if ((digitalRead(key_1) == LOW) && (key_1_old == true)) { // Key Length -
-      key_1_old = false;
-      cnt1 -= 0x1;
-    } else if (digitalRead(key_1) == HIGH) {
-      key_1_old = true;
-    }
-
-    if ((digitalRead(key_2) == LOW) && (key_2_old == true)) { // Key Quick
-      key_2_old = false;
-      cnt1 += 0x10;
-    } else if (digitalRead(key_2) == HIGH) {
-      key_2_old = true;
-    }
-
-    if ((digitalRead(key_3) == LOW) && (key_3_old == true)) { // Key Program -
-      key_3_old = false;
-      cnt1 -= 0x10;
-    } else if (digitalRead(key_3) == HIGH) {
-      key_3_old = true;
-    }
-
-    if ((digitalRead(key_4) == LOW) && (key_4_old == true)) { // Key Program +
-      key_4_old = false;
-      cnt1 += 0x100;
-    } else if (digitalRead(key_4) == HIGH) {
-      key_4_old = true;
-    }
-
-    if ((digitalRead(key_5) == LOW) && (key_5_old == true)) { // Key Slow
-      key_5_old = false;
-      cnt1 -= 0x100;
-    } else if (digitalRead(key_5) == HIGH) {
-      key_5_old = true;
-    }
-
-    if ((digitalRead(key_6) == LOW) && (key_6_old == true)) { // Key Power
-      key_6_old = false;
-      cnt1 += 0x1000;
-    } else if (digitalRead(key_6) == HIGH) {
-      key_6_old = true;
-    }
-
-    if ((digitalRead(key_7) == LOW) && (key_7_old == true)) { // Key Pause
-      key_7_old = false;
-      cnt1 -= 0x1000;
-    } else if (digitalRead(key_7) == HIGH) {
-      key_7_old = true;
-    }
-
     if (cnt1 > 0xFFFF) {
       cnt1 = 0;
     } else if (cnt1 < 0) {
       cnt1 = 0xFFFF;
     }
+
+    print_4_dig_hex(cnt1);
   }
 }
