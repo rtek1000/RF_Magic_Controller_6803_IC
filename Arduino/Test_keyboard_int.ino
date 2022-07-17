@@ -10,6 +10,9 @@
 
     (Tested using the STM8S103F3 model selected in the Arduino IDE)
 
+    Modifications:
+    - 2022-07-17: Added interruption
+
 */
 
 #include"stm8s.h"
@@ -179,8 +182,6 @@ void send_string(char *str) {
   }
 }
 
-volatile bool flag = false;
-
 void key_interr (void) {
   if ((digitalRead(key_0) == LOW) && (key_0_old == true)) { // Key Length +
     key_0_old = false;
@@ -294,12 +295,6 @@ void setup (void) {
 }
 
 void loop (void) {
-  //  if (flag == true) {
-  //    flag = false;
-  //
-  //    cnt1++;
-  //  }
-
   if (cnt1 > 0xFFFF) {
     cnt1 = 0;
   } else if (cnt1 < 0) {
