@@ -20,6 +20,7 @@ const char char_H = 17;
 const char char_P = 25;
 const char char_Off = 62;
 
+// Characters found:
 // 17: H
 // 18: seg e
 // 19: seg b, c, d
