@@ -105,8 +105,13 @@ void print_4_dig_hex(int x) {
   send_string(c);
 }
 
-void send_string(char *str)
-{
+/*
+ * 
+ * Routine send_string source: https://github.com/tenbaht/sduino/blob/development/examples/uart-spl/uart_spl.c
+ * 
+ */ 
+
+void send_string(char *str){
   char c;
 
   if (!str) return;
