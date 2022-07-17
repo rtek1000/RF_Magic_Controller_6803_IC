@@ -145,6 +145,22 @@ volatile unsigned long _width_us = 0;
 volatile unsigned long _interval_width_us = 0;
 volatile unsigned long _interval_base_us = 0;
 
+// Remote control patterns:
+//         0000000000111111 111122222
+//         0123456789012345 678901234
+// ON/OFF: 0101010101010101 110000000
+// PAUSE:  0101010101010101 001100000
+// B+:     0101010101010101 001111000
+// B-:     0101010101010101 110011000
+// S+:     0101010101010101 000011000
+// S-:     0101010101010101 111100000
+// M+:     0101010101010101 000000110
+// M-:     0101010101010101 111111000
+// T: 1.570ms
+// 0: 0.3985ms
+// 1: 1.185ms
+// Interval: 12.29ms
+
 const unsigned long _const_data_addr = 0B0101010101010101;
 const unsigned int _const_data_on_off =  0B110000000;
 const unsigned int _const_data_pause =   0B001100000;
@@ -223,24 +239,6 @@ void send_string(char *str) {
     UART1_SendData8(c);
   }
 }
-
-// volatile millis_rf1 = 0;
-
-// Remote control patterns:
-//         0000000000111111 111122222
-//         0123456789012345 678901234
-// ON/OFF: 0101010101010101 110000000
-// PAUSE:  0101010101010101 001100000
-// B+:     0101010101010101 001111000
-// B-:     0101010101010101 110011000
-// S+:     0101010101010101 000011000
-// S-:     0101010101010101 111100000
-// M+:     0101010101010101 000000110
-// M-:     0101010101010101 111111000
-// T: 1.570ms
-// 0: 0.3985ms
-// 1: 1.185ms
-// Interval: 12.29ms
 
 void RF_interr(void) {
   _width_us = TIM1_GetCounter(); // step: 0.5us
