@@ -341,7 +341,7 @@ void setup (void) {
   EXTI_SetExtIntSensitivity( EXTI_PORT_GPIOB, EXTI_SENSITIVITY_RISE_FALL);
   enableInterrupts();
 
-  attachInterrupt(digitalPinToInterrupt(RF_in), RF_interr, CHANGE);
+  attachInterrupt(INT_PORTB & 0xFF, RF_interr, CHANGE);
 
   // https://sites.google.com/site/klaasdc/stm8s-projects/rpm-counter-1
   TIM1_DeInit();
