@@ -29,6 +29,7 @@ The remote control transmitter consumes approximately 2.4uA at rest with the 12V
 
 The controller board has an IC that receives the signal from the remote control, this IC has a 6.7458MHz crystal. The signal is passed directly to the uC, like any 433MHz RF receiver. The signal enters pin 12 of the main uC.
 
+![alt text](https://raw.githubusercontent.com/rtek1000/RF_Magic_Controller_6803_IC/main/Remote_control2.png?raw=true)
 
 For reference only, this video shows the shape of the parts:
 
