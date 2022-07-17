@@ -95,3 +95,9 @@ https://circuitdigest.com/microcontroller-projects/programming-stm8s-microcontro
 - For some reason the NRST pin was not able to be kept in a high state (5V) via a pull-up resistor. I found that there was no 1.8V on the VCAP pin, I tried putting a pull-up resistor between the VDD (5V) and the VCAP, after putting the resistor (4k7) on the VCAP, the NRST signal returned to normal, and the VCAP now has 1.8V.
 
 [2] When uploading code via Arduino IDE, the original program will be erased forever, be sure what you are doing.
+
+[3] ST-Link needs to be connected only on the pins:
+- NRST
+- SWIM
+- GND
+(The board must be powered via the 12V power supply, at the 12V input)
