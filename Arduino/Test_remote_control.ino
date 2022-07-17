@@ -16,7 +16,7 @@
 #include"stm8s.h"
 
 // ref.: https://www.stm32duino.com/viewtopic.php?t=719
-// #define digitalPinToInterrupt(p)  ((p)==(p)) // workaround-fix, empty macro is missing in header files
+#define digitalPinToInterrupt(p)  ((p)==(p)) // workaround-fix, empty macro is missing in header files
 
 char c[5] = {36, 164, 164, 164, 0};
 
@@ -120,7 +120,28 @@ bool key_7_old = true;
 
 long cnt1 = 0;
 
-unsigned long millis1 = 0;
+volatile unsigned long millis1 = 0;
+
+volatile bool RF_in_new = false;
+volatile bool RF_in_old = false;
+
+volatile int cnt_bits_rf = 0;
+
+volatile unsigned long data_bits_rf = 0;
+volatile unsigned long data_bits_rf2 = 0;
+
+volatile unsigned int micros1 = 0;
+volatile unsigned int micros2 = 0;
+
+const unsigned long data_addr = 0B0101010101010101;
+const unsigned int data_on_off =  0B110000000;
+const unsigned int data_pause =   0B001100000;
+const unsigned int data_b_plus =  0B001111000;
+const unsigned int data_b_minus = 0B110011000;
+const unsigned int data_s_plus =  0B000011000;
+const unsigned int data_s_minus = 0B111100000;
+const unsigned int data_m_plus =  0B000000110;
+const unsigned int data_m_minus = 0B111111000;
 
 char val_0_F(int x);
 void print_4_dig_dec(uint32_t x);
@@ -190,11 +211,93 @@ void send_string(char *str) {
   }
 }
 
-volatile uint32_t flag = 0;
+volatile bool flag = false;
 
-// void RF_interr(void){
-void EXTI1_IRQHandler(void) {
-  flag++;
+volatile unsigned long data_addr_rf = 0;
+volatile unsigned int data_rf = 0;
+
+void RF_interr(void) {
+//  flag = true;
+
+  RF_in_new = digitalRead(RF_in);
+
+  //  if (RF_in_new != RF_in_old) {
+  //    RF_in_old = RF_in_new;
+
+  if (RF_in_new == true) {
+//    flag = true;
+    // cnt1++;
+
+    micros1 = micros();
+  } else { // if (RF_in_new == false)
+    flag = true;
+    micros2 = micros() - micros1;
+    if (micros2 > 1050) { // 1185us + 100us // 398us - 100us
+      if (micros2 < 1350) {
+        data_bits_rf = (data_bits_rf << 1) + 1;
+      } else {
+        data_bits_rf = 0;
+        cnt_bits_rf = 0;
+      }
+    } else if (micros2 < 550) { // 1185us + 100us // 398us - 100us
+      if (micros2 > 250) {
+        data_bits_rf = data_bits_rf << 1;
+      }
+    } else {
+      data_bits_rf = 0;
+      cnt_bits_rf = 0;
+      // cnt1 = 0;
+    }
+
+    if (cnt_bits_rf != 25) {
+      cnt_bits_rf++;
+    } else {
+      data_bits_rf2 = data_bits_rf;
+
+      data_addr_rf = data_bits_rf2 >> 9;
+
+      if (data_addr_rf == data_addr) {
+        //cnt1++;
+
+        data_rf = data_bits_rf2 & 0x1FF;
+
+        // cnt1 += 0x1;
+        if (data_rf == data_on_off) { // Key Power
+          cnt1 += 0x1000;
+        } else if (data_rf == data_pause) { // Key Pause
+          cnt1 -= 0x1000;
+        } else if (data_rf == data_b_plus) { // Key B+ (Key Program +)
+          cnt1 += 0x100;
+        } else if (data_rf == data_b_minus) { // Key B- (Key Program -)
+          cnt1 -= 0x10;
+        } else if (data_rf == data_s_plus) { // Key S+ (Key Quick)
+          cnt1 += 0x10;
+        } else if (data_rf == data_s_minus) { // Key S- (Key Slow)
+          cnt1 -= 0x100;
+        } else if (data_rf == data_m_plus) { // Key M+ (Key Length +)
+          cnt1 += 0x1;
+        } else if (data_rf == data_m_minus) { // Key M- (Key Length -)
+          cnt1 -= 0x1;
+        }
+
+        if (cnt1 > 0xFFFF) {
+          cnt1 = 0;
+        }
+
+        if (cnt1 < 0) {
+          cnt1 = 0xFFFF;
+        }
+
+        //          print_4_dig_hex(cnt1);
+        //
+        //          millis1 = millis();
+
+        data_bits_rf = 0;
+        cnt_bits_rf = 0;
+      }
+    }
+  }
+  //  }
 }
 
 void setup (void) {
@@ -218,7 +321,12 @@ void setup (void) {
   pinMode(key_6, INPUT_PULLUP);
   pinMode(key_7, INPUT_PULLUP);
 
-  //  // attachInterrupt(digitalPinToInterrupt(RF_in), RF_interr, CHANGE);
+  GPIO_Init(GPIOB, GPIO_PIN_4, GPIO_MODE_IN_FL_IT);
+  disableInterrupts();
+  EXTI_SetExtIntSensitivity( EXTI_PORT_GPIOB, EXTI_SENSITIVITY_RISE_FALL);
+  enableInterrupts();
+
+  attachInterrupt(digitalPinToInterrupt(RF_in), RF_interr, CHANGE);
 
   //  ITC_DeInit();
   //  ITC_SetSoftwarePriority(ITC_IRQ_PORTB, ITC_PRIORITYLEVEL_0);
@@ -262,27 +370,6 @@ void setup (void) {
   delay(600);
 }
 
-bool RF_in_new = false;
-bool RF_in_old = false;
-
-int cnt_bits_rf = 0;
-
-unsigned long data_bits_rf = 0;
-unsigned long data_bits_rf2 = 0;
-
-unsigned int micros1 = 0;
-unsigned int micros2 = 0;
-
-const unsigned long data_addr = 0B0101010101010101;
-const unsigned int data_on_off =  0B110000000;
-const unsigned int data_pause =   0B001100000;
-const unsigned int data_b_plus =  0B001111000;
-const unsigned int data_b_minus = 0B110011000;
-const unsigned int data_s_plus =  0B000011000;
-const unsigned int data_s_minus = 0B111100000;
-const unsigned int data_m_plus =  0B000000110;
-const unsigned int data_m_minus = 0B111111000;
-
 void loop (void) {
   // Remote control patterns:
   //         0000000000111111 111122222
@@ -299,89 +386,88 @@ void loop (void) {
   // 0: 0.3985ms
   // 1: 1.185ms
 
-  RF_in_new = digitalRead(RF_in);
+  //  RF_in_new = digitalRead(RF_in);
+  //
+  //  if (RF_in_new != RF_in_old) {
+  //    RF_in_old = RF_in_new;
+  //
+  //    if (RF_in_new == true) {
+  //      // cnt1++;
+  //
+  //      micros1 = micros();
+  //    } else { // if (RF_in_new == false)
+  //      micros2 = micros() - micros1;
+  //      if (micros2 > 1050) { // 1185us + 100us // 398us - 100us
+  //        if (micros2 < 1350) {
+  //          data_bits_rf = (data_bits_rf << 1) + 1;
+  //        } else {
+  //          data_bits_rf = 0;
+  //          cnt_bits_rf = 0;
+  //        }
+  //      } else if (micros2 < 550) { // 1185us + 100us // 398us - 100us
+  //        if (micros2 > 250) {
+  //          data_bits_rf = data_bits_rf << 1;
+  //        }
+  //      } else {
+  //        data_bits_rf = 0;
+  //        cnt_bits_rf = 0;
+  //        // cnt1 = 0;
+  //      }
+  //
+  //      if (cnt_bits_rf != 25) {
+  //        cnt_bits_rf++;
+  //      } else {
+  //        data_bits_rf2 = data_bits_rf;
+  //
+  //        unsigned long data_addr_rf = data_bits_rf2 >> 9;
+  //
+  //        if (data_addr_rf == data_addr) {
+  //          //cnt1++;
+  //
+  //          unsigned int data_rf = data_bits_rf2 & 0x1FF;
+  //
+  //          // cnt1 += 0x1;
+  //          if (data_rf == data_on_off) { // Key Power
+  //            cnt1 += 0x1000;
+  //          } else if (data_rf == data_pause) { // Key Pause
+  //            cnt1 -= 0x1000;
+  //          } else if (data_rf == data_b_plus) { // Key B+ (Key Program +)
+  //            cnt1 += 0x100;
+  //          } else if (data_rf == data_b_minus) { // Key B- (Key Program -)
+  //            cnt1 -= 0x10;
+  //          } else if (data_rf == data_s_plus) { // Key S+ (Key Quick)
+  //            cnt1 += 0x10;
+  //          } else if (data_rf == data_s_minus) { // Key S- (Key Slow)
+  //            cnt1 -= 0x100;
+  //          } else if (data_rf == data_m_plus) { // Key M+ (Key Length +)
+  //            cnt1 += 0x1;
+  //          } else if (data_rf == data_m_minus) { // Key M- (Key Length -)
+  //            cnt1 -= 0x1;
+  //          }
+  //
+  //          if (cnt1 > 0xFFFF) {
+  //            cnt1 = 0;
+  //          }
+  //
+  //          if (cnt1 < 0) {
+  //            cnt1 = 0xFFFF;
+  //          }
+  //
+  //          //          print_4_dig_hex(cnt1);
+  //          //
+  //          //          millis1 = millis();
+  //
+  //          data_bits_rf = 0;
+  //          cnt_bits_rf = 0;
+  //        }
+  //      }
+  //    }
+  //  }
 
-  if (RF_in_new != RF_in_old) {
-    RF_in_old = RF_in_new;
-
-    if (RF_in_new == true) {
-      // cnt1++;
-
-      micros1 = micros();
-    } else { // if (RF_in_new == false)
-      micros2 = micros() - micros1;
-      if (micros2 > 1050) { // 1185us + 100us // 398us - 100us
-        if (micros2 < 1350) {
-          data_bits_rf = (data_bits_rf << 1) + 1;
-        } else {
-          data_bits_rf = 0;
-          cnt_bits_rf = 0;
-        }
-      } else if (micros2 < 550) { // 1185us + 100us // 398us - 100us
-        if (micros2 > 250) {
-          data_bits_rf = data_bits_rf << 1;
-        }
-      } else {
-        data_bits_rf = 0;
-        cnt_bits_rf = 0;
-        // cnt1 = 0;
-      }
-
-      if (cnt_bits_rf != 25) {
-        cnt_bits_rf++;
-      } else {
-        data_bits_rf2 = data_bits_rf;
-
-        unsigned long data_addr_rf = data_bits_rf2 >> 9;
-
-        if (data_addr_rf == data_addr) {
-          //cnt1++;
-
-          unsigned int data_rf = data_bits_rf2 & 0x1FF;
-
-          // cnt1 += 0x1;
-          if (data_rf == data_on_off) { // Key Power
-            cnt1 += 0x1000;
-          } else if (data_rf == data_pause) { // Key Pause
-            cnt1 -= 0x1000;
-          } else if (data_rf == data_b_plus) { // Key B+ (Key Program +)
-            cnt1 += 0x100;
-          } else if (data_rf == data_b_minus) { // Key B- (Key Program -)
-            cnt1 -= 0x10;
-          } else if (data_rf == data_s_plus) { // Key S+ (Key Quick)
-            cnt1 += 0x10;
-          } else if (data_rf == data_s_minus) { // Key S- (Key Slow)
-            cnt1 -= 0x100;
-          } else if (data_rf == data_m_plus) { // Key M+ (Key Length +)
-            cnt1 += 0x1;
-          } else if (data_rf == data_m_minus) { // Key M- (Key Length -)
-            cnt1 -= 0x1;
-          }
-
-          if (cnt1 > 0xFFFF) {
-            cnt1 = 0;
-          }
-
-          if (cnt1 < 0) {
-            cnt1 = 0xFFFF;
-          }
-
-          //          print_4_dig_hex(cnt1);
-          //
-          //          millis1 = millis();
-
-          data_bits_rf = 0;
-          cnt_bits_rf = 0;
-        }
-      }
-    }
-  }
-
-
-  if (flag > 0) {
-    cnt1 += flag;
-    flag = 0;
-  }
+//  if (flag == true) {
+//    cnt1++;
+//    flag = false;
+//  }
 
   if (millis() > (millis1 + 250)) {
     millis1 = millis();
