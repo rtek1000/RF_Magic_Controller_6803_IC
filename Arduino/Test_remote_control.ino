@@ -10,6 +10,7 @@
 
     (Tested using the STM8S103F3 model selected in the Arduino IDE)
 
+    BUG: Only the ON/OFF button worked well, the other buttons do not have the same performance.
 */
 
 #include"stm8s.h"
