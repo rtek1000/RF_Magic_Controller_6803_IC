@@ -8,6 +8,8 @@
  *  Here's how to program:
  *  https://circuitdigest.com/microcontroller-projects/programming-stm8s-microcontrollers-using-arduino-ide
  *  
+ *  (Tested using the STM8S103F3 model selected in the Arduino IDE)
+ *  
  */
 
 #include"stm8s.h"
