@@ -113,8 +113,8 @@ bool key_7_old = true;
 unsigned int cnt1 = 0;
 
 char val_0_F(int x);
-void print_4_dig_dec(int x);
-void print_4_dig_hex(int x);
+void print_4_dig_dec(uint32_t x);
+void print_4_dig_hex(uint32_t x);
 void send_string(char *str);
 void setup (void);
 void loop (void);
@@ -123,14 +123,14 @@ char val_0_F(int x) {
   return x + 64;
 }
 
-void print_4_dig_dec(int x) {
-  int x1000 = x / 1000;
+void print_4_dig_dec(uint32_t x) {
+  uint8_t x1000 = x / 1000;
   x -= x1000 * 1000;
-  int x100 = x / 100;
+  uint8_t x100 = x / 100;
   x -= x100 * 100;
-  int x10 = x / 10;
+  uint8_t x10 = x / 10;
   x -= x10 * 10;
-  int x1 = x;
+  uint8_t x1 = x;
 
   c[0] = val_0_F(x1000);
   c[1] = val_0_F(x100);
@@ -140,14 +140,14 @@ void print_4_dig_dec(int x) {
   send_string(c);
 }
 
-void print_4_dig_hex(int x) {
-  int x1000 = x / 0x1000;
+void print_4_dig_hex(uint32_t x) {
+  uint8_t x1000 = x / 0x1000;
   x -= x1000 * 0x1000;
-  int x100 = x / 0x100;
+  uint8_t x100 = x / 0x100;
   x -= x100 * 0x100;
-  int x10 = x / 0x10;
+  uint8_t x10 = x / 0x10;
   x -= x10 * 0x10;
-  int x1 = x;
+  uint8_t x1 = x;
 
   c[0] = val_0_F(x1000);
   c[1] = val_0_F(x100);
@@ -275,7 +275,7 @@ void loop (void) {
     key_7_old = true;
   }
 
-  if (cnt1 > 0x9999) {
+  if (cnt1 >= 0x10000) {
     cnt1 = 0;
   }
 
