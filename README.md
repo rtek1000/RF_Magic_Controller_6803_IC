@@ -31,6 +31,45 @@ Apparently the display triggering communication is via serial, and when comparin
 - - uC sends '\*', 170, 170, 170 ('\*': ASCII 42)
 - - uC sends '1', '\t', '0', '3' ('1': ASCII 49; '\t': ASCII 9; '0': ASCII 48; '3': ASCII 51)
 
+- Sequence of combinations of segments (and characters) found:
+- - Value 17: 'H'
+- - Value 18: seg e
+- - Value 19: seg b, c, d
+- - Value 20: seg g
+- - Value 21: seg d, e, f "L"
+- - Value 23: seg a, b, c, e, f "N"
+- - Value 25: 'P'
+- - Value 28: seg a, e
+- - Value 29: seg a, b, d, e, f
+- - Value 30: seg d, g
+- - Value 31: seg c, d, e, g "o"
+- - Value 34: seg a, g
+- - Value 36: seg a
+- - Value 37: seg a, b
+- - Value 38: seg a, b, c
+- - Value 39: seg a, b, c, d
+- - Value 40: seg a, b, c, d, e
+- - Value 41: seg a, b, c, d, e, f
+- - Value 42: seg a, b, c, d, e, f, g
+- - Value 62: all seg off
+- - Value 64: '0'
+- - Value 65: '1'
+- - Value 66: '2'
+- - Value 67: '3'
+- - Value 68: '4'
+- - Value 69: '5'
+- - Value 70: '6'
+- - Value 71: '7'
+- - Value 72: '8'
+- - Value 73: '9'
+- - Value 74: 'A'
+- - Value 75: 'b'
+- - Value 76: 'C'
+- - Value 77: 'd'
+- - Value 78: 'E'
+- - Value 79: 'F'
+- - Value 93: seg a, b, d, e, f "C'"
+
 Output data appears to be being sent at an incredible 2.4 Mbps. The signal seems to be inverted, with idle logic at 0V (low state), different from the display communication which has high state idle logic. Data capture (display, output control and also the signal from the remote control) are in the Logic folder. Note: Output data is only from the control module, it was not connected to the LED strip
 
 The remote control transmitter consumes approximately 2.4uA at rest with the 12V battery, model 23A (It is recommended not to leave the 12V battery in the remote control transmitter when storing for more than a few days, the battery powers a voltage regulator directly). And when the button is pressed, the consumption is greater than 13mA.
