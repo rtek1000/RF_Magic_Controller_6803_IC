@@ -26,6 +26,8 @@
           connected it to the PD4 pin of the uC STM8.
 
     - 2022-07-17: Added display initialization routine, to improve (a little) code reading
+    - 2022-07-17: Added keyboard initialization routine, to improve (a little) code reading
+    - 2022-07-17: Added rf remote control initialization routine, to improve (a little) code reading
 */
 
 #include"stm8s.h"
@@ -189,6 +191,8 @@ void print_4_dig_hex(uint32_t x);
 void send_string(char *str);
 void key_interr (void);
 void display_init(void);
+void keyboard_init(void);
+void rf_ctrl_init(void);
 void setup (void);
 void loop (void);
 
@@ -399,6 +403,12 @@ void key_interr (void) {
 void display_init(void) {
   char init1[2] = {0xFF, 0};
 
+  UART1_DeInit();
+  UART1_Init(9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
+             UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
+
+  pinMode(Serial_TX, OUTPUT);
+
   send_string(init1);
 
   delay(42);
@@ -426,9 +436,7 @@ void display_init(void) {
   delay(600);
 }
 
-void setup (void) {
-  pinMode(RF_in, INPUT);
-
+void keyboard_init(void) {
   pinMode(key_0, INPUT_PULLUP);
   pinMode(key_1, INPUT_PULLUP);
   pinMode(key_2, INPUT_PULLUP);
@@ -437,17 +445,6 @@ void setup (void) {
   pinMode(key_5, INPUT_PULLUP);
   pinMode(key_6, INPUT_PULLUP);
   pinMode(key_7, INPUT_PULLUP);
-
-  // ref.: https://www.stm32duino.com/viewtopic.php?t=719
-  // GPIO_Init(GPIOB, GPIO_PIN_4, GPIO_MODE_IN_FL_IT);
-  GPIO_Init(GPIOD, GPIO_PIN_4, GPIO_MODE_IN_FL_IT);
-  disableInterrupts();
-  //EXTI_SetExtIntSensitivity( EXTI_PORT_GPIOB, EXTI_SENSITIVITY_RISE_FALL);
-  EXTI_SetExtIntSensitivity( EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL);
-  enableInterrupts();
-
-  // attachInterrupt(INT_PORTB & 0xFF, RF_interr, CHANGE);
-  attachInterrupt(INT_PORTD & 0xFF, RF_interr, CHANGE);
 
   // ref.: https://www.stm32duino.com/viewtopic.php?t=719
   GPIO_Init(GPIOA, GPIO_PIN_3 | GPIO_PIN_2 | GPIO_PIN_1, GPIO_MODE_IN_PU_IT);
@@ -460,6 +457,21 @@ void setup (void) {
 
   attachInterrupt(INT_PORTA & 0xFF, key_interr, CHANGE); // Group: GPIO_PIN_3 | GPIO_PIN_2 | GPIO_PIN_1
   attachInterrupt(INT_PORTC & 0xFF, key_interr, CHANGE); // Group: GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7
+}
+
+void rf_ctrl_init(void) {
+  pinMode(RF_in, INPUT);
+
+  // ref.: https://www.stm32duino.com/viewtopic.php?t=719
+  // GPIO_Init(GPIOB, GPIO_PIN_4, GPIO_MODE_IN_FL_IT);
+  GPIO_Init(GPIOD, GPIO_PIN_4, GPIO_MODE_IN_FL_IT);
+  disableInterrupts();
+  //EXTI_SetExtIntSensitivity( EXTI_PORT_GPIOB, EXTI_SENSITIVITY_RISE_FALL);
+  EXTI_SetExtIntSensitivity( EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL);
+  enableInterrupts();
+
+  // attachInterrupt(INT_PORTB & 0xFF, RF_interr, CHANGE);
+  attachInterrupt(INT_PORTD & 0xFF, RF_interr, CHANGE);
 
   // https://sites.google.com/site/klaasdc/stm8s-projects/rpm-counter-1
   TIM1_DeInit();
@@ -469,14 +481,14 @@ void setup (void) {
   // https://community.st.com/s/question/0D50X0000AlgLvtSQE/tim1getcounter-results
   // TIM1_SetCounter(0);
   // TIM1_GetCounter();
+}
 
-  UART1_DeInit();
-  UART1_Init(9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
-             UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
+void setup (void) {
+  keyboard_init(); // External interrupt
 
-  pinMode(Serial_TX, OUTPUT);
+  rf_ctrl_init();  // External interrupt + Timer 1
 
-  display_init();
+  display_init();  // Serial UART1
 }
 
 void loop (void) {
