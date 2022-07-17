@@ -3,7 +3,7 @@
 
     Created by RTEK1000
     Date: 2022-07-16
-    Repo.: https://github.com/rtek1000/RF_Magic_Controller_6803_IC/blob/main/Arduino/Test_keyboard.ino
+    Repo.: https://github.com/rtek1000/RF_Magic_Controller_6803_IC/blob/main/Arduino_Modified_Hardware/Test_remote_control_HM/Test_remote_control_HM.ino
 
     Here's how to program:
     https://circuitdigest.com/microcontroller-projects/programming-stm8s-microcontrollers-using-arduino-ide
@@ -28,6 +28,7 @@
     - 2022-07-17: Added display initialization routine, to improve (a little) code reading
     - 2022-07-17: Added keyboard initialization routine, to improve (a little) code reading
     - 2022-07-17: Added rf remote control initialization routine, to improve (a little) code reading
+    - 2022-07-17: Separated code into files to improve (a little) code readability
 */
 
 #include"stm8s.h"
