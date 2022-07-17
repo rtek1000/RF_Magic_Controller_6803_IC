@@ -21,6 +21,16 @@ Apparently the display triggering communication is via serial, and when comparin
 - - Display '5''1''0''0': uC sends 5, 129, 128, 128
 - - Display ' '' '' '' ' (All segments disabled): uC sends '>', '>', '>', '>' (ASCII 62, interval between sends: 2 seconds) 
 
+- Display init sequency:
+- - uC sends '$', 164, 164, 164 ('$': ASCII 36)
+- - uC sends '%', 165, 165, 165 ('%': ASCII 37)
+- - uC sends '&', 166, 166, 166 ('&': ASCII 38)
+- - uC sends ''', 167, 167, 167 (''': ASCII 39)
+- - uC sends '(', 168, 168, 168 ('(': ASCII 40)
+- - uC sends ')', 164, 164, 164 (')': ASCII 41)
+- - uC sends '*', 164, 164, 164 ('*': ASCII 42)
+- - uC sends '1', '\t', '0', '3' ('1': ASCII 49; '\t': ASCII 9; '0': ASCII 48; '3': ASCII 51)
+
 Output data appears to be being sent at an incredible 2.4 Mbps. The signal seems to be inverted, with idle logic at 0V (low state), different from the display communication which has high state idle logic. Data capture (display, output control and also the signal from the remote control) are in the Logic folder. Note: Output data is only from the control module, it was not connected to the LED strip
 
 The remote control transmitter consumes approximately 2.4uA at rest with the 12V battery, model 23A (It is recommended not to leave the 12V battery in the remote control transmitter when storing for more than a few days, the battery powers a voltage regulator directly). And when the button is pressed, the consumption is greater than 13mA.
