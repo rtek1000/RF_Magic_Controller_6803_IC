@@ -21,7 +21,7 @@ Apparently the display triggering communication is via serial, and when comparin
 - - Display '5''1''0''0': uC sends 5, 129, 128, 128
 - - Display ' '' '' '' ' (All segments disabled): uC sends '>', '>', '>', '>' (ASCII 62, interval between sends: 2 seconds) 
 
-- Display init sequency:
+- Display initialization sequence:
 - - uC sends '$', 164, 164, 164 ('$': ASCII 36)
 - - uC sends '%', 165, 165, 165 ('%': ASCII 37)
 - - uC sends '&', 166, 166, 166 ('&': ASCII 38)
