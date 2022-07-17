@@ -8,3 +8,6 @@ For this I modified (cut) the track of the RF receiver of the remote control and
 Reference:
 
 ![alt text](https://circuitdigest.com/sites/default/files/inlineimages/u2/Arduino-Pin-Mapping-for-STM8S103F3.png?raw=true)
+
+# Note:
+- The Test_remote_control_HM folder contains the code separated into parts, to try to improve the readability
