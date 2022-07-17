@@ -24,6 +24,8 @@
           without needing much hardware change, I chose to use a PCF8574 port expander.
           For this I modified (cut) the track of the RF receiver of the remote control and
           connected it to the PD4 pin of the uC STM8.
+
+    - 2022-07-17: Added display initialization routine, to improve (a little) code reading
 */
 
 #include"stm8s.h"
@@ -186,6 +188,7 @@ void print_4_dig_dec(uint32_t x);
 void print_4_dig_hex(uint32_t x);
 void send_string(char *str);
 void key_interr (void);
+void display_init(void);
 void setup (void);
 void loop (void);
 
@@ -393,6 +396,36 @@ void key_interr (void) {
   }
 }
 
+void display_init(void) {
+  char init1[2] = {0xFF, 0};
+
+  send_string(init1);
+
+  delay(42);
+
+  send_string(init1);
+  send_string(init1);
+
+  delay(90);
+
+  while (1) {
+    send_string(c);
+
+    if (c[0] < 42) {
+      c[0]++;
+      c[1]++;
+      c[2]++;
+      c[3]++;
+    } else {
+      break;
+    }
+
+    delay(100);
+  }
+
+  delay(600);
+}
+
 void setup (void) {
   pinMode(RF_in, INPUT);
 
@@ -442,34 +475,8 @@ void setup (void) {
              UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
 
   pinMode(Serial_TX, OUTPUT);
-  
-  char init1[2] = {0xFF, 0};
 
-  send_string(init1);
-
-  delay(42);
-
-  send_string(init1);
-  send_string(init1);
-
-  delay(90);
-
-  while (1) {
-    send_string(c);
-
-    if (c[0] < 42) {
-      c[0]++;
-      c[1]++;
-      c[2]++;
-      c[3]++;
-    } else {
-      break;
-    }
-
-    delay(100);
-  }
-
-  delay(600);
+  display_init();
 }
 
 void loop (void) {
