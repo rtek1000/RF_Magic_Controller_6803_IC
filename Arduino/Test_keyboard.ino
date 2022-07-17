@@ -132,7 +132,8 @@ void print_4_dig_dec(uint32_t x) {
   x -= x10 * 10;
   uint8_t x1 = x;
 
-  c[0] = val_0_F(x1000);
+  if(x1000 == 0) x1000 = 62;
+  c[0] = x1000;
   c[1] = val_0_F(x100);
   c[2] = val_0_F(x10);
   c[3] = val_0_F(x1);
@@ -149,7 +150,8 @@ void print_4_dig_hex(uint32_t x) {
   x -= x10 * 0x10;
   uint8_t x1 = x;
 
-  c[0] = val_0_F(x1000);
+  if(x1000 == 0) x1000 = 62;
+  c[0] = x1000;
   c[1] = val_0_F(x100);
   c[2] = val_0_F(x10);
   c[3] = val_0_F(x1);
@@ -194,6 +196,17 @@ void setup (void) {
   UART1_Init(9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
              UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
 
+  char init1[2] = {0xFF, 0};
+
+  send_string(init1);
+
+  delay(42);
+
+  send_string(init1);
+  send_string(init1);
+
+  delay(90);
+  
   while (1) {
     send_string(c);
 
