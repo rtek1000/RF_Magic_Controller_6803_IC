@@ -31,7 +31,7 @@ Apparently the display triggering communication is via serial, and when comparin
 - - uC sends '\*', 170, 170, 170 ('\*': ASCII 42)
 - - uC sends '1', '\t', '0', '3' ('1': ASCII 49; '\t': ASCII 9; '0': ASCII 48; '3': ASCII 51)
 
-- Sequence of combinations of segments (and characters) found:
+- Sequence of combinations of segments (and characters) accepted in each digit (other values repeat patterns):
 - - Value 17: 'H'
 - - Value 18: seg e
 - - Value 19: seg b, c, d
