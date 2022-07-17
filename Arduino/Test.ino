@@ -3,7 +3,7 @@
  *  
  *  Created by RTEK1000
  *  Date: 2022-07-16
- *  Repo.: https://github.com/rtek1000/RF_Magic_Controller_6803_IC/blob/main/Arduino/Teste.ino
+ *  Repo.: https://github.com/rtek1000/RF_Magic_Controller_6803_IC/blob/main/Arduino/Test.ino
  *  
  *  Here's how to program:
  *  https://circuitdigest.com/microcontroller-projects/programming-stm8s-microcontrollers-using-arduino-ide
