@@ -28,7 +28,7 @@ Apparently the display triggering communication is via serial, and when comparin
 - - uC sends ''', 167, 167, 167 (''': ASCII 39)
 - - uC sends '(', 168, 168, 168 ('(': ASCII 40)
 - - uC sends ')', 169, 169, 169 (')': ASCII 41)
-- - uC sends '\\*', 170, 170, 170 ('*': ASCII 42)
+- - uC sends '\*', 170, 170, 170 ('*': ASCII 42)
 - - uC sends '1', '\t', '0', '3' ('1': ASCII 49; '\t': ASCII 9; '0': ASCII 48; '3': ASCII 51)
 
 Output data appears to be being sent at an incredible 2.4 Mbps. The signal seems to be inverted, with idle logic at 0V (low state), different from the display communication which has high state idle logic. Data capture (display, output control and also the signal from the remote control) are in the Logic folder. Note: Output data is only from the control module, it was not connected to the LED strip
