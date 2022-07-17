@@ -10,7 +10,10 @@
 
     (Tested using the STM8S103F3 model selected in the Arduino IDE)
 
-    BUG: Only the ON/OFF button worked well, the other buttons do not have the same performance.
+    [Solved] BUG: Only the ON/OFF button worked well, the other buttons do not have the same performance.
+    - 2022-07-17: Added timer counter
+    - 2022-07-17: Added external interrupt
+    - 2022-07-17: Added return (exit) for resync
 */
 
 #include"stm8s.h"
@@ -118,30 +121,36 @@ bool key_5_old = true;
 bool key_6_old = true;
 bool key_7_old = true;
 
-long cnt1 = 0;
+volatile long cnt1 = 0;
 
 volatile unsigned long millis1 = 0;
 
 volatile bool RF_in_new = false;
 volatile bool RF_in_old = false;
 
-volatile int cnt_bits_rf = 0;
+volatile int _cnt_bits_rf = 0;
 
-volatile unsigned long data_bits_rf = 0;
-volatile unsigned long data_bits_rf2 = 0;
+volatile unsigned long _data_bits_rf = 0;
+volatile unsigned long _data_bits_rf2 = 0;
 
-volatile unsigned int micros1 = 0;
-volatile unsigned int micros2 = 0;
+volatile bool flag = false;
 
-const unsigned long data_addr = 0B0101010101010101;
-const unsigned int data_on_off =  0B110000000;
-const unsigned int data_pause =   0B001100000;
-const unsigned int data_b_plus =  0B001111000;
-const unsigned int data_b_minus = 0B110011000;
-const unsigned int data_s_plus =  0B000011000;
-const unsigned int data_s_minus = 0B111100000;
-const unsigned int data_m_plus =  0B000000110;
-const unsigned int data_m_minus = 0B111111000;
+volatile unsigned long _const_data_addr_rf = 0;
+volatile unsigned int _data_rf = 0;
+
+volatile unsigned long _width_us = 0;
+volatile unsigned long _interval_width_us = 0;
+volatile unsigned long _interval_base_us = 0;
+
+const unsigned long _const_data_addr = 0B0101010101010101;
+const unsigned int _const_data_on_off =  0B110000000;
+const unsigned int _const_data_pause =   0B001100000;
+const unsigned int _const_data_b_plus =  0B001111000;
+const unsigned int _const_data_b_minus = 0B110011000;
+const unsigned int _const_data_s_plus =  0B000011000;
+const unsigned int _const_data_s_minus = 0B111100000;
+const unsigned int _const_data_m_plus =  0B000000110;
+const unsigned int _const_data_m_minus = 0B111111000;
 
 char val_0_F(int x);
 void print_4_dig_dec(uint32_t x);
@@ -211,105 +220,110 @@ void send_string(char *str) {
   }
 }
 
-volatile bool flag = false;
+// volatile millis_rf1 = 0;
 
-volatile unsigned long data_addr_rf = 0;
-volatile unsigned int data_rf = 0;
+// Remote control patterns:
+//         0000000000111111 111122222
+//         0123456789012345 678901234
+// ON/OFF: 0101010101010101 110000000
+// PAUSE:  0101010101010101 001100000
+// B+:     0101010101010101 001111000
+// B-:     0101010101010101 110011000
+// S+:     0101010101010101 000011000
+// S-:     0101010101010101 111100000
+// M+:     0101010101010101 000000110
+// M-:     0101010101010101 111111000
+// T: 1.570ms
+// 0: 0.3985ms
+// 1: 1.185ms
+// Interval: 12.29ms
 
 void RF_interr(void) {
-//  flag = true;
+  _width_us = TIM1_GetCounter(); // step: 0.5us
+  TIM1_SetCounter(0);
 
-  RF_in_new = digitalRead(RF_in);
+  if (digitalRead(RF_in) == HIGH) {
+    if (_cnt_bits_rf != 25) {
+      _cnt_bits_rf++;
 
-  //  if (RF_in_new != RF_in_old) {
-  //    RF_in_old = RF_in_new;
+      _interval_width_us = micros() - _interval_base_us;
 
-  if (RF_in_new == true) {
-//    flag = true;
-    // cnt1++;
-
-    micros1 = micros();
-  } else { // if (RF_in_new == false)
-    flag = true;
-    micros2 = micros() - micros1;
-    if (micros2 > 1050) { // 1185us + 100us // 398us - 100us
-      if (micros2 < 1350) {
-        data_bits_rf = (data_bits_rf << 1) + 1;
-      } else {
-        data_bits_rf = 0;
-        cnt_bits_rf = 0;
+      if (_interval_width_us > 5000) { // Interval (resync)
+        _data_bits_rf = 0;
+        _cnt_bits_rf = 0;
+        return;
       }
-    } else if (micros2 < 550) { // 1185us + 100us // 398us - 100us
-      if (micros2 > 250) {
-        data_bits_rf = data_bits_rf << 1;
+    }
+  } else { // if (digitalRead(RF_in) == LOW) {
+    _interval_base_us = micros();
+
+    // 1185us * 2 = 2370us
+    // 2370us + 150us = 2520us
+    // 2370us - 150us = 2220us
+    // 398us * 2 = 796us
+    // 796us + 150us = 946us
+    // 796us - 150us = 646us
+
+    if (_width_us > 2220 ) {
+      if (_width_us < 2520) {
+        _data_bits_rf = (_data_bits_rf << 1) + 1;
+      } else {
+        _data_bits_rf = 0; // (resync)
+        _cnt_bits_rf = 0;
+        return;
+      }
+    } else if (_width_us < 946) {
+      if (_width_us > 646) {
+        _data_bits_rf = _data_bits_rf << 1;
+      } else {
+        _data_bits_rf = 0; // (resync)
+        _cnt_bits_rf = 0;
+        return;
       }
     } else {
-      data_bits_rf = 0;
-      cnt_bits_rf = 0;
-      // cnt1 = 0;
+      _data_bits_rf = 0; // (resync)
+      _cnt_bits_rf = 0;
+      return;
     }
 
-    if (cnt_bits_rf != 25) {
-      cnt_bits_rf++;
-    } else {
-      data_bits_rf2 = data_bits_rf;
+    _data_bits_rf2 = _data_bits_rf;
 
-      data_addr_rf = data_bits_rf2 >> 9;
+    _const_data_addr_rf = _data_bits_rf2 >> 9;
 
-      if (data_addr_rf == data_addr) {
-        //cnt1++;
+    if (_const_data_addr_rf == _const_data_addr) {
+      _data_rf = _data_bits_rf2 & 0x1FF;
 
-        data_rf = data_bits_rf2 & 0x1FF;
-
-        // cnt1 += 0x1;
-        if (data_rf == data_on_off) { // Key Power
-          cnt1 += 0x1000;
-        } else if (data_rf == data_pause) { // Key Pause
-          cnt1 -= 0x1000;
-        } else if (data_rf == data_b_plus) { // Key B+ (Key Program +)
-          cnt1 += 0x100;
-        } else if (data_rf == data_b_minus) { // Key B- (Key Program -)
-          cnt1 -= 0x10;
-        } else if (data_rf == data_s_plus) { // Key S+ (Key Quick)
-          cnt1 += 0x10;
-        } else if (data_rf == data_s_minus) { // Key S- (Key Slow)
-          cnt1 -= 0x100;
-        } else if (data_rf == data_m_plus) { // Key M+ (Key Length +)
-          cnt1 += 0x1;
-        } else if (data_rf == data_m_minus) { // Key M- (Key Length -)
-          cnt1 -= 0x1;
-        }
-
-        if (cnt1 > 0xFFFF) {
-          cnt1 = 0;
-        }
-
-        if (cnt1 < 0) {
-          cnt1 = 0xFFFF;
-        }
-
-        //          print_4_dig_hex(cnt1);
-        //
-        //          millis1 = millis();
-
-        data_bits_rf = 0;
-        cnt_bits_rf = 0;
+      if (_data_rf == _const_data_on_off) { // Key Power
+        cnt1 += 0x1000;
+      } else if (_data_rf == _const_data_pause) { // Key Pause
+        cnt1 -= 0x1000;
+      } else if (_data_rf == _const_data_b_plus) { // Key B+ (Key Program +)
+        cnt1 += 0x100;
+      } else if (_data_rf == _const_data_b_minus) { // Key B- (Key Program -)
+        cnt1 -= 0x10;
+      } else if (_data_rf == _const_data_s_plus) { // Key S+ (Key Quick)
+        cnt1 += 0x10;
+      } else if (_data_rf == _const_data_s_minus) { // Key S- (Key Slow)
+        cnt1 -= 0x100;
+      } else if (_data_rf == _const_data_m_plus) { // Key M+ (Key Length +)
+        cnt1 += 0x1;
+      } else if (_data_rf == _const_data_m_minus) { // Key M- (Key Length -)
+        cnt1 -= 0x1;
       }
+
+      if (cnt1 > 0xFFFF) {
+        cnt1 = 0;
+      } else if (cnt1 < 0) {
+        cnt1 = 0xFFFF;
+      }
+
+      _data_bits_rf = 0;
+      _cnt_bits_rf = 0;
     }
   }
-  //  }
 }
 
 void setup (void) {
-  pinMode(Serial_TX, OUTPUT); // Serial TX
-
-  //
-  digitalWrite(Serial_TX, HIGH);
-  //  digitalWrite(Serial_TX, LOW);
-  //  digitalWrite(Serial_TX, HIGH);
-  //
-  //  delay(42);
-
   pinMode(RF_in, INPUT);
 
   pinMode(key_0, INPUT_PULLUP);
@@ -321,6 +335,7 @@ void setup (void) {
   pinMode(key_6, INPUT_PULLUP);
   pinMode(key_7, INPUT_PULLUP);
 
+  // ref.: https://www.stm32duino.com/viewtopic.php?t=719
   GPIO_Init(GPIOB, GPIO_PIN_4, GPIO_MODE_IN_FL_IT);
   disableInterrupts();
   EXTI_SetExtIntSensitivity( EXTI_PORT_GPIOB, EXTI_SENSITIVITY_RISE_FALL);
@@ -328,14 +343,14 @@ void setup (void) {
 
   attachInterrupt(digitalPinToInterrupt(RF_in), RF_interr, CHANGE);
 
-  //  ITC_DeInit();
-  //  ITC_SetSoftwarePriority(ITC_IRQ_PORTB, ITC_PRIORITYLEVEL_0);
-  //
-  //  EXTI_DeInit();
-  //  EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOB, EXTI_SENSITIVITY_RISE_FALL);
-  //  // EXTI_SetTLISensitivity(EXTI_TLISENSITIVITY_FALL_ONLY);
-  //
-  //  enableInterrupts();
+  // https://sites.google.com/site/klaasdc/stm8s-projects/rpm-counter-1
+  TIM1_DeInit();
+  TIM1_TimeBaseInit(7, TIM1_COUNTERMODE_UP, 65535, 0);
+  TIM1_Cmd(ENABLE);
+
+  // https://community.st.com/s/question/0D50X0000AlgLvtSQE/tim1getcounter-results
+  // TIM1_SetCounter(0);
+  // TIM1_GetCounter();
 
   UART1_DeInit();
   UART1_Init(9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
@@ -371,114 +386,10 @@ void setup (void) {
 }
 
 void loop (void) {
-  // Remote control patterns:
-  //         0000000000111111 111122222
-  //         0123456789012345 678901234
-  // ON/OFF: 0101010101010101 110000000
-  // PAUSE:  0101010101010101 001100000
-  // B+:     0101010101010101 001111000
-  // B-:     0101010101010101 110011000
-  // S+:     0101010101010101 000011000
-  // S-:     0101010101010101 111100000
-  // M+:     0101010101010101 000000110
-  // M-:     0101010101010101 111111000
-  // T: 1.570ms
-  // 0: 0.3985ms
-  // 1: 1.185ms
-
-  //  RF_in_new = digitalRead(RF_in);
-  //
-  //  if (RF_in_new != RF_in_old) {
-  //    RF_in_old = RF_in_new;
-  //
-  //    if (RF_in_new == true) {
-  //      // cnt1++;
-  //
-  //      micros1 = micros();
-  //    } else { // if (RF_in_new == false)
-  //      micros2 = micros() - micros1;
-  //      if (micros2 > 1050) { // 1185us + 100us // 398us - 100us
-  //        if (micros2 < 1350) {
-  //          data_bits_rf = (data_bits_rf << 1) + 1;
-  //        } else {
-  //          data_bits_rf = 0;
-  //          cnt_bits_rf = 0;
-  //        }
-  //      } else if (micros2 < 550) { // 1185us + 100us // 398us - 100us
-  //        if (micros2 > 250) {
-  //          data_bits_rf = data_bits_rf << 1;
-  //        }
-  //      } else {
-  //        data_bits_rf = 0;
-  //        cnt_bits_rf = 0;
-  //        // cnt1 = 0;
-  //      }
-  //
-  //      if (cnt_bits_rf != 25) {
-  //        cnt_bits_rf++;
-  //      } else {
-  //        data_bits_rf2 = data_bits_rf;
-  //
-  //        unsigned long data_addr_rf = data_bits_rf2 >> 9;
-  //
-  //        if (data_addr_rf == data_addr) {
-  //          //cnt1++;
-  //
-  //          unsigned int data_rf = data_bits_rf2 & 0x1FF;
-  //
-  //          // cnt1 += 0x1;
-  //          if (data_rf == data_on_off) { // Key Power
-  //            cnt1 += 0x1000;
-  //          } else if (data_rf == data_pause) { // Key Pause
-  //            cnt1 -= 0x1000;
-  //          } else if (data_rf == data_b_plus) { // Key B+ (Key Program +)
-  //            cnt1 += 0x100;
-  //          } else if (data_rf == data_b_minus) { // Key B- (Key Program -)
-  //            cnt1 -= 0x10;
-  //          } else if (data_rf == data_s_plus) { // Key S+ (Key Quick)
-  //            cnt1 += 0x10;
-  //          } else if (data_rf == data_s_minus) { // Key S- (Key Slow)
-  //            cnt1 -= 0x100;
-  //          } else if (data_rf == data_m_plus) { // Key M+ (Key Length +)
-  //            cnt1 += 0x1;
-  //          } else if (data_rf == data_m_minus) { // Key M- (Key Length -)
-  //            cnt1 -= 0x1;
-  //          }
-  //
-  //          if (cnt1 > 0xFFFF) {
-  //            cnt1 = 0;
-  //          }
-  //
-  //          if (cnt1 < 0) {
-  //            cnt1 = 0xFFFF;
-  //          }
-  //
-  //          //          print_4_dig_hex(cnt1);
-  //          //
-  //          //          millis1 = millis();
-  //
-  //          data_bits_rf = 0;
-  //          cnt_bits_rf = 0;
-  //        }
-  //      }
-  //    }
-  //  }
-
-//  if (flag == true) {
-//    cnt1++;
-//    flag = false;
-//  }
-
   if (millis() > (millis1 + 250)) {
     millis1 = millis();
 
     print_4_dig_hex(cnt1);
-
-    //    if (cnt1 < 0x10000) {
-    //      cnt1++;
-    //    } else {
-    //      cnt1 = 0;
-    //    }
 
     if ((digitalRead(key_0) == LOW) && (key_0_old == true)) { // Key Length +
       key_0_old = false;
@@ -536,8 +447,10 @@ void loop (void) {
       key_7_old = true;
     }
 
-    if (cnt1 >= 0x10000) {
+    if (cnt1 > 0xFFFF) {
       cnt1 = 0;
+    } else if (cnt1 < 0) {
+      cnt1 = 0xFFFF;
     }
   }
 }
