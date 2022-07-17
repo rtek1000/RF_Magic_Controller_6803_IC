@@ -3,7 +3,7 @@
  *  
  *  Created by RTEK1000
  *  Date: 2022-07-16
- *  Repo.: https://github.com/rtek1000/RF_Magic_Controller_6803_IC/blob/main/Arduino/Test.ino
+ *  Repo.: https://github.com/rtek1000/RF_Magic_Controller_6803_IC/blob/main/Arduino/Teste.ino
  *  
  *  Here's how to program:
  *  https://circuitdigest.com/microcontroller-projects/programming-stm8s-microcontrollers-using-arduino-ide
@@ -20,7 +20,6 @@ const char char_H = 17;
 const char char_P = 25;
 const char char_Off = 62;
 
-// Characters found:
 // 17: H
 // 18: seg e
 // 19: seg b, c, d
@@ -62,8 +61,8 @@ const char char_Off = 62;
 int cnt1 = 0;
 
 char val_0_F(int x);
-void print_4_dig_dec(int x);
-void print_4_dig_hex(int x);
+void print_4_dig_dec(uint32_t x);
+void print_4_dig_hex(uint32_t x);
 void send_string(char *str);
 void setup (void);
 void loop (void);
@@ -72,16 +71,17 @@ char val_0_F(int x) {
   return x + 64;
 }
 
-void print_4_dig_dec(int x) {
-  int x1000 = x / 1000;
+void print_4_dig_dec(uint32_t x) {
+  uint8_t x1000 = x / 1000;
   x -= x1000 * 1000;
-  int x100 = x / 100;
+  uint8_t x100 = x / 100;
   x -= x100 * 100;
-  int x10 = x / 10;
+  uint8_t x10 = x / 10;
   x -= x10 * 10;
-  int x1 = x;
+  uint8_t x1 = x;
 
-  c[0] = val_0_F(x1000);
+  if(x1000 == 0) x1000 = 62;
+  c[0] = x1000;
   c[1] = val_0_F(x100);
   c[2] = val_0_F(x10);
   c[3] = val_0_F(x1);
@@ -89,16 +89,17 @@ void print_4_dig_dec(int x) {
   send_string(c);
 }
 
-void print_4_dig_hex(int x) {
-  int x1000 = x / 0x1000;
+void print_4_dig_hex(uint32_t x) {
+  uint8_t x1000 = x / 0x1000;
   x -= x1000 * 0x1000;
-  int x100 = x / 0x100;
+  uint8_t x100 = x / 0x100;
   x -= x100 * 0x100;
-  int x10 = x / 0x10;
+  uint8_t x10 = x / 0x10;
   x -= x10 * 0x10;
-  int x1 = x;
+  uint8_t x1 = x;
 
-  c[0] = val_0_F(x1000);
+  if(x1000 == 0) x1000 = 62;
+  c[0] = x1000;
   c[1] = val_0_F(x100);
   c[2] = val_0_F(x10);
   c[3] = val_0_F(x1);
@@ -128,6 +129,17 @@ void setup (void) {
   UART1_Init(9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
              UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
 
+  char init1[2] = {0xFF, 0};
+
+  send_string(init1);
+
+  delay(42);
+
+  send_string(init1);
+  send_string(init1);
+
+  delay(90);
+  
   while (1) {
     send_string(c);
 
