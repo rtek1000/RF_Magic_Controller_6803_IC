@@ -1,4 +1,16 @@
-//
+/*
+    This sample code does the MCP4725 test
+
+    Created by RTEK1000
+    Date: 2022-07-18
+    Repo.: https://github.com/rtek1000/RF_Magic_Controller_6803_IC/blob/main/Arduino_Modified_Hardware/dac_test.ino
+
+    Here's how to program:
+    https://circuitdigest.com/microcontroller-projects/programming-stm8s-microcontrollers-using-arduino-ide
+
+    (Tested using the STM8S103F3 model selected in the Arduino IDE)
+
+*/
 
 #include"stm8s.h"
 #include "stm8s_i2c.h"
