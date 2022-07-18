@@ -15,12 +15,12 @@ For this I modified (cut) the track of the RF receiver of the remote control and
 - I2C port ref.:
 - - https://www.youtube.com/watch?v=gR7oqUz4CW4
 - - https://github.com/timypik/STM8S-Library/blob/master/libstm8s/src/stm8s_i2c.c
-- ![STM8 optimized I2C examples (AN3281)](https://www.st.com/en/embedded-software/stsw-stm8004.html)
+- ![STM8 optimized I2C examples (AN3281)](https://www.st.com/en/embedded-software/stsw-stm8004.html) <---- see this one (code sample)
 - - https://www.st.com/resource/en/application_note/an3281-stm8-8bit-mcus-ic-optimized-examples-stmicroelectronics.pdf
 
 Reference:
 
-![alt text](https://circuitdigest.com/sites/default/files/inlineimages/u2/Arduino-Pin-Mapping-for-STM8S103F3.png?raw=true) <---- see this one (code sample)
+![alt text](https://circuitdigest.com/sites/default/files/inlineimages/u2/Arduino-Pin-Mapping-for-STM8S103F3.png?raw=true)
 
 # Note:
 - The Test_remote_control_HM folder contains the code separated into parts, to try to improve the readability
