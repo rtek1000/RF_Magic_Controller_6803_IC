@@ -5,7 +5,7 @@ For this I modified (cut) the track of the RF receiver of the remote control and
 
 - To run sample code from this folder you must use modified hardware.
 
-- Note: Unfortunately I still couldn't get the I2C port to work correctly, there are several posts that say they had problems with the I2C on these STM8S, and in my case the I2C_GetFlagStatus() function seems to be unable to read the register and so the routine freezes.
+- Note: Unfortunately I still couldn't get the I2C port to work correctly, there are some posts that say they had problems with I2C on these STM8S, and in my case the I2C_GetFlagStatus() function seems to be unable to read the register and so the routine freezes.
 - I2C port ref.:
 - - https://www.youtube.com/watch?v=gR7oqUz4CW4
 - - https://github.com/timypik/STM8S-Library/blob/master/libstm8s/src/stm8s_i2c.c
