@@ -9,6 +9,7 @@ For this I modified (cut) the track of the RF receiver of the remote control and
 - I2C port ref.:
 - - https://www.youtube.com/watch?v=gR7oqUz4CW4
 - - https://github.com/timypik/STM8S-Library/blob/master/libstm8s/src/stm8s_i2c.c
+- - https://cdn.hackaday.io/files/278671192261728/AN3281%20Application%20note%20STM8%20I2C%20optimized%20examples.pdf
 
 Reference:
 
