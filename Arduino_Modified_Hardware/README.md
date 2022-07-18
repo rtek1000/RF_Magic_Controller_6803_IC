@@ -9,6 +9,8 @@ For this I modified (cut) the track of the RF receiver of the remote control and
 - - https://github.com/timypik/STM8S-Library/blob/master/libstm8s/inc/stm8s_i2c.h
 - This other file shows the activation of the interrupt on line 88:
 - - https://github.com/HomeSmartMesh/STM8_IoT_HelloWorld/blob/master/18_STM8L_HelloI2C/i2c.c
+- Info: https://github.com/tenbaht/sduino/issues/143
+
 
 - I2C port ref.:
 - - https://www.youtube.com/watch?v=gR7oqUz4CW4
