@@ -2,6 +2,7 @@
 - The RF signal input from the remote control is originally connected to the PB4 pin, but on this pin there is the I2C hardware module.
 To expand the capacity of available pins, without needing much hardware change, I chose to use a PCF8574 port expander.
 For this I modified (cut) the track of the RF receiver of the remote control and connected it to the PD4 pin of the uC STM8.
+I will also need an MCP4725 to generate an analog output with 12-bit precision, another option would be to create a DAC using PWM, but it can cause ripple noise.
 
 - To run sample code from this folder you must use modified hardware.
 
