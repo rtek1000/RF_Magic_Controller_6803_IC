@@ -34,7 +34,7 @@
 #include"stm8s.h"
 
 void loop (void) {
-  if (millis() > (millis1 + 250)) {
+  if ((millis() - millis1) >= 250) {
     millis1 = millis();
 
     if (cnt1 > 0xFFFF) {
