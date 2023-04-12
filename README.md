@@ -1,4 +1,6 @@
-# RF_Magic_Controller_6803_IC
+See too: [Examples and tutorials found on the Internet for using the resources of the STM8](https://github.com/rtek1000/STM8S-examples)
+
+## RF_Magic_Controller_6803_IC
 RF magic Controller 6803 IC 133 Modes for Dream Color Chasing 5050 RGB LED Strip (Hardware hacking)
 
 ![alt text](https://raw.githubusercontent.com/rtek1000/RF_Magic_Controller_6803_IC/main/Description.jpg?raw=true)
