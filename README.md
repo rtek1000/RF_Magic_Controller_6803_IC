@@ -7,7 +7,7 @@ RF magic Controller 6803 IC 133 Modes for Dream Color Chasing 5050 RGB LED Strip
 
 --------
 
-Note: Unfortunately, they are already using an alternative IC to the STM8, in this case it is an HC89S003A, see [here](https://github.com/rtek1000/RF_Magic_Controller_6803_IC/tree/main/Non_STM8_Board).
+Note: Unfortunately, they are already using an alternative IC to the STM8 (HC89S003A), see [here](https://github.com/rtek1000/RF_Magic_Controller_6803_IC/tree/main/Non_STM8_Board).
 
 --------
 
